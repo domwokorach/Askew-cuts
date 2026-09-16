@@ -4,10 +4,11 @@ import { Check } from "lucide-react";
 
 const STEPS = [
   { n: 1, label: "Service" },
-  { n: 2, label: "Date" },
-  { n: 3, label: "Time" },
-  { n: 4, label: "Details" },
-  { n: 5, label: "Confirm" },
+  { n: 2, label: "Barber" },
+  { n: 3, label: "Date" },
+  { n: 4, label: "Time" },
+  { n: 5, label: "Details" },
+  { n: 6, label: "Confirm" },
 ];
 
 export default function BookingProgress({ current }: { current: number }) {

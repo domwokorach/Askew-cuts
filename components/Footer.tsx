@@ -26,17 +26,27 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/" className="hover:text-grey-light">
+                <Link href="/" className="hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="/book" className="hover:text-grey-light">
+                <Link href="/#services" className="hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link href="/team" className="hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
+                  Team
+                </Link>
+              </li>
+              <li>
+                <Link href="/book" className="hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
                   Book
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-grey-light">
+                <Link href="/contact" className="hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
                   Contact
                 </Link>
               </li>
@@ -52,14 +62,14 @@ export default function Footer() {
                 href="https://maps.google.com/?q=256+Goldhawk+Rd,+London+W12+9PE"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-2 hover:text-grey-light"
+                className="flex items-start gap-2 hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
               >
                 <MapPin size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
                 <span>256 Goldhawk Rd, London W12 9PE</span>
               </a>
               <a
                 href="tel:07588646638"
-                className="flex items-center gap-2 hover:text-grey-light"
+                className="flex items-center gap-2 hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
               >
                 <Phone size={16} className="shrink-0" aria-hidden="true" />
                 <span>07588 646638</span>
@@ -78,7 +88,36 @@ export default function Footer() {
           </LinkButton>
         </div>
 
-        <p className="mt-10 text-xs text-grey-mid">
+        <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <nav aria-label="Legal" className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Link
+              href="/privacy"
+              className="text-xs uppercase tracking-[0.08em] text-grey-mid hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+            >
+              Privacy Policy
+            </Link>
+            <span className="text-grey-mid/50 text-xs" aria-hidden="true">
+              |
+            </span>
+            <Link
+              href="/terms"
+              className="text-xs uppercase tracking-[0.08em] text-grey-mid hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+            >
+              Terms &amp; Conditions
+            </Link>
+            <span className="text-grey-mid/50 text-xs" aria-hidden="true">
+              |
+            </span>
+            <Link
+              href="/cookies"
+              className="text-xs uppercase tracking-[0.08em] text-grey-mid hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+            >
+              Cookie Policy
+            </Link>
+          </nav>
+        </div>
+
+        <p className="mt-6 text-xs text-grey-mid">
           © {new Date().getFullYear()} Askew Cuts. All rights reserved.
         </p>
       </div>

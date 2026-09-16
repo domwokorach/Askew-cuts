@@ -17,15 +17,15 @@ interface BaseProps {
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-ink text-cream border border-ink hover:bg-ink/90",
+    "bg-ink text-cream border border-ink hover:bg-ink/90 focus-visible:ring-ink focus-visible:ring-offset-cream",
   secondary:
-    "bg-transparent text-ink border border-ink hover:bg-ink hover:text-cream",
+    "bg-transparent text-ink border border-ink hover:bg-ink hover:text-cream focus-visible:ring-ink focus-visible:ring-offset-cream",
   ghost:
-    "bg-transparent text-ink border border-grey-light hover:border-ink",
+    "bg-transparent text-ink border border-grey-light hover:border-ink focus-visible:ring-ink focus-visible:ring-offset-cream",
   inverse:
-    "bg-cream text-ink border border-cream hover:bg-cream/90",
+    "bg-cream text-ink border border-cream hover:bg-cream/90 focus-visible:ring-cream focus-visible:ring-offset-ink",
   "ghost-inverse":
-    "bg-transparent text-cream border border-cream/40 hover:bg-cream hover:text-ink",
+    "bg-transparent text-cream border border-cream/40 hover:bg-cream hover:text-ink focus-visible:ring-cream focus-visible:ring-offset-ink",
 };
 
 const sizeClasses = {
@@ -35,7 +35,7 @@ const sizeClasses = {
 
 function classes(variant: Variant, size: "md" | "lg", extra?: string) {
   return [
-    "inline-flex items-center justify-center gap-2 font-medium uppercase tracking-[0.08em] transition-colors duration-200 min-h-[44px]",
+    "inline-flex items-center justify-center gap-2 font-medium uppercase tracking-[0.08em] transition-colors duration-200 min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
     variantClasses[variant],
     sizeClasses[size],
     extra,

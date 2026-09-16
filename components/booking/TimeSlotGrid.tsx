@@ -3,19 +3,30 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { formatTimeLabel, getDaySlots } from "@/lib/hours";
-import { getBookedTimesForDate } from "@/lib/bookingStore";
+import { getAvailableStaffForSlot } from "@/lib/staffAvailability";
+import type { StaffMember } from "@/lib/types";
 
 export default function TimeSlotGrid({
-  dateKey,
+  date,
+  qualifyingStaff,
   selected,
   onSelect,
 }: {
-  dateKey: string;
+  date: Date;
+  qualifyingStaff: StaffMember[];
   selected: string | null;
   onSelect: (time: string) => void;
 }) {
-  const booked = useMemo(() => getBookedTimesForDate(dateKey), [dateKey]);
   const slots = getDaySlots();
+
+  const availability = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const time of slots) {
+      map.set(time, getAvailableStaffForSlot(qualifyingStaff, date, time).length > 0);
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date, qualifyingStaff]);
 
   return (
     <div>
@@ -37,7 +48,7 @@ export default function TimeSlotGrid({
         className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3"
       >
         {slots.map((time) => {
-          const isBooked = booked.has(time);
+          const isBooked = !availability.get(time);
           const isSelected = selected === time;
           return (
             <motion.button

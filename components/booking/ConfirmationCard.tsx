@@ -6,6 +6,7 @@ import Button, { LinkButton } from "../Button";
 import { formatTimeLabel } from "@/lib/hours";
 import { getService } from "@/lib/services";
 import { downloadBookingIcs } from "@/lib/calendarExport";
+import { getStaffMember } from "@/lib/staff";
 import type { Booking } from "@/lib/types";
 
 const DATE_FORMAT = new Intl.DateTimeFormat("en-GB", {
@@ -17,6 +18,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat("en-GB", {
 
 export default function ConfirmationCard({ booking }: { booking: Booking }) {
   const service = getService(booking.service);
+  const barber = getStaffMember(booking.barberId);
   const date = new Date(`${booking.date}T00:00:00`);
 
   return (
@@ -57,6 +59,10 @@ export default function ConfirmationCard({ booking }: { booking: Booking }) {
           <div className="flex items-center justify-between px-6 py-4">
             <dt className="text-sm uppercase tracking-[0.08em] text-grey-dark">Service</dt>
             <dd className="font-medium">{service?.name}</dd>
+          </div>
+          <div className="flex items-center justify-between px-6 py-4">
+            <dt className="text-sm uppercase tracking-[0.08em] text-grey-dark">Barber</dt>
+            <dd className="font-medium">{barber?.firstName ?? "Askew Cuts Team"}</dd>
           </div>
           <div className="flex items-center justify-between px-6 py-4">
             <dt className="text-sm uppercase tracking-[0.08em] text-grey-dark">Price</dt>

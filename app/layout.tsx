@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Oswald, Inter } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CookieConsentBanner from "@/components/cookies/CookieConsentBanner";
 import "./globals.css";
 
 const oswald = Oswald({
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <CookieConsentBanner />
       </body>
     </html>
   );

@@ -24,9 +24,12 @@ function buildMonthGrid(year: number, month: number): (Date | null)[] {
 export default function Calendar({
   selected,
   onSelect,
+  isDateUnavailable,
 }: {
   selected: Date | null;
   onSelect: (date: Date) => void;
+  /** Extra predicate (beyond past dates) for days with no qualifying barber availability. */
+  isDateUnavailable?: (date: Date) => boolean;
 }) {
   const today = useMemo(() => new Date(), []);
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -79,7 +82,7 @@ export default function Calendar({
       <div className="grid grid-cols-7 gap-1">
         {cells.map((date, i) => {
           if (!date) return <div key={`empty-${i}`} />;
-          const disabled = isPastDate(date, today);
+          const disabled = isPastDate(date, today) || (isDateUnavailable?.(date) ?? false);
           const isSelected = selected && toDateKey(selected) === toDateKey(date);
           const isToday = toDateKey(date) === toDateKey(today);
 

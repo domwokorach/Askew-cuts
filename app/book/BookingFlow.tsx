@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import BookingProgress from "@/components/booking/BookingProgress";
 import ServiceSelector from "@/components/booking/ServiceSelector";
+import StaffSelector from "@/components/booking/StaffSelector";
 import Calendar from "@/components/booking/Calendar";
 import TimeSlotGrid from "@/components/booking/TimeSlotGrid";
 import BookingForm from "@/components/booking/BookingForm";
@@ -15,7 +16,13 @@ import { toDateKey, formatTimeLabel } from "@/lib/hours";
 import { createBooking, SlotUnavailableError } from "@/lib/bookingStore";
 import { validateCustomer } from "@/lib/validation";
 import { getService } from "@/lib/services";
-import type { Booking, CustomerDetails, ServiceSlug } from "@/lib/types";
+import { getStaffMember } from "@/lib/staff";
+import {
+  getAvailableStaffForDate,
+  getQualifyingStaffForService,
+  resolveAnyAvailableStaff,
+} from "@/lib/staffAvailability";
+import { ANY_BARBER, type BarberChoice, type Booking, type CustomerDetails, type ServiceSlug } from "@/lib/types";
 
 const EMPTY_CUSTOMER: CustomerDetails = {
   firstName: "",
@@ -24,6 +31,8 @@ const EMPTY_CUSTOMER: CustomerDetails = {
   email: "",
   dateOfBirth: "",
 };
+
+const TOTAL_STEPS = 6;
 
 export default function BookingFlow({
   initialService,
@@ -34,9 +43,11 @@ export default function BookingFlow({
   const [service, setService] = useState<ServiceSlug | null>(
     initialService && getService(initialService) ? initialService : null
   );
+  const [barberChoice, setBarberChoice] = useState<BarberChoice | null>(null);
   const [date, setDate] = useState<Date | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [customer, setCustomer] = useState<CustomerDetails>(EMPTY_CUSTOMER);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState<Booking | null>(null);
@@ -45,23 +56,63 @@ export default function BookingFlow({
   const customerErrors = validateCustomer(customer);
   const customerValid = Object.keys(customerErrors).length === 0;
 
+  const qualifyingStaff = useMemo(
+    () => (service ? getQualifyingStaffForService(service) : []),
+    [service]
+  );
+  const staffForTimeGrid = useMemo(
+    () =>
+      barberChoice && barberChoice !== ANY_BARBER
+        ? qualifyingStaff.filter((s) => s.id === barberChoice)
+        : qualifyingStaff,
+    [qualifyingStaff, barberChoice]
+  );
+
+  function handleSelectService(next: ServiceSlug) {
+    setService(next);
+    setBarberChoice(null);
+    setDate(null);
+    setTime(null);
+  }
+
+  function handleSelectBarber(next: BarberChoice) {
+    setBarberChoice(next);
+    setDate(null);
+    setTime(null);
+  }
+
   function goNext() {
-    setStep((s) => Math.min(5, s + 1));
+    setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   }
   function goBack() {
     setStep((s) => Math.max(1, s - 1));
   }
 
   async function handleConfirm() {
-    if (!service || !date || !time) return;
+    if (!service || !barberChoice || !date || !time || !agreedToTerms) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
+      let barberId: string;
+      if (barberChoice === ANY_BARBER) {
+        const resolved = resolveAnyAvailableStaff(qualifyingStaff, date, time);
+        if (!resolved) {
+          setSubmitError("No barbers are available for this slot. Please choose another time.");
+          setSubmitting(false);
+          return;
+        }
+        barberId = resolved.id;
+      } else {
+        barberId = barberChoice;
+      }
+
       const booking = createBooking({
         service,
+        barberId,
         date: dateKey,
         time,
         customer,
+        agreedToTerms,
       });
       setConfirmed(booking);
     } catch (err) {
@@ -81,9 +132,20 @@ export default function BookingFlow({
 
   const canContinue =
     (step === 1 && !!service) ||
-    (step === 2 && !!date) ||
-    (step === 3 && !!time) ||
-    (step === 4 && customerValid);
+    (step === 2 && !!barberChoice) ||
+    (step === 3 && !!date) ||
+    (step === 4 && !!time) ||
+    (step === 5 && customerValid);
+
+  const resolvedBarberForSummary =
+    barberChoice === ANY_BARBER
+      ? date && time
+        ? resolveAnyAvailableStaff(qualifyingStaff, date, time)
+        : null
+      : getStaffMember(barberChoice ?? undefined);
+  const barberSummaryName = resolvedBarberForSummary
+    ? `${resolvedBarberForSummary.firstName} — ${resolvedBarberForSummary.role}`
+    : "Askew Cuts Team";
 
   return (
     <div>
@@ -103,22 +165,38 @@ export default function BookingFlow({
                 <h2 className="font-heading text-[24px] md:text-[28px] font-semibold uppercase tracking-tight mb-6">
                   Choose your service
                 </h2>
-                <ServiceSelector selected={service} onSelect={(s) => setService(s)} />
+                <ServiceSelector selected={service} onSelect={handleSelectService} />
               </div>
             )}
 
-            {step === 2 && (
+            {step === 2 && service && (
+              <div>
+                <h2 className="font-heading text-[24px] md:text-[28px] font-semibold uppercase tracking-tight mb-2">
+                  Choose Your Barber
+                </h2>
+                <p className="text-sm text-grey-dark mb-6">
+                  Select an available member of the Askew Cuts team for your appointment.
+                </p>
+                <StaffSelector service={service} selected={barberChoice} onSelect={handleSelectBarber} />
+              </div>
+            )}
+
+            {step === 3 && (
               <div>
                 <h2 className="font-heading text-[24px] md:text-[28px] font-semibold uppercase tracking-tight mb-6">
                   Choose a date
                 </h2>
                 <div className="max-w-md">
-                  <Calendar selected={date} onSelect={(d) => setDate(d)} />
+                  <Calendar
+                    selected={date}
+                    onSelect={(d) => setDate(d)}
+                    isDateUnavailable={(d) => getAvailableStaffForDate(staffForTimeGrid, d).length === 0}
+                  />
                 </div>
               </div>
             )}
 
-            {step === 3 && date && (
+            {step === 4 && date && (
               <div>
                 <h2 className="font-heading text-[24px] md:text-[28px] font-semibold uppercase tracking-tight mb-2">
                   Choose a time
@@ -127,11 +205,16 @@ export default function BookingFlow({
                   Available slots for{" "}
                   {date.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
                 </p>
-                <TimeSlotGrid dateKey={dateKey} selected={time} onSelect={(t) => setTime(t)} />
+                <TimeSlotGrid
+                  date={date}
+                  qualifyingStaff={staffForTimeGrid}
+                  selected={time}
+                  onSelect={(t) => setTime(t)}
+                />
               </div>
             )}
 
-            {step === 4 && (
+            {step === 5 && (
               <div>
                 <h2 className="font-heading text-[24px] md:text-[28px] font-semibold uppercase tracking-tight mb-6">
                   Your details
@@ -140,18 +223,21 @@ export default function BookingFlow({
               </div>
             )}
 
-            {step === 5 && service && date && time && (
+            {step === 6 && service && date && time && (
               <div>
                 <h2 className="font-heading text-[24px] md:text-[28px] font-semibold uppercase tracking-tight mb-6">
                   Review &amp; confirm
                 </h2>
                 <BookingSummary
                   service={service}
+                  barberName={barberSummaryName}
                   date={date}
                   time={time}
                   customer={customer}
+                  agreedToTerms={agreedToTerms}
+                  onAgreedToTermsChange={setAgreedToTerms}
                   onConfirm={handleConfirm}
-                  onEdit={() => setStep(1)}
+                  onEdit={goBack}
                   submitting={submitting}
                   error={submitError}
                 />
@@ -161,7 +247,7 @@ export default function BookingFlow({
         </AnimatePresence>
       </div>
 
-      {step < 5 && (
+      {step < TOTAL_STEPS && (
         <div className="mt-10 flex items-center justify-between">
           <Button
             variant="ghost"
@@ -183,7 +269,7 @@ export default function BookingFlow({
         </div>
       )}
 
-      {step === 5 && (
+      {step === TOTAL_STEPS && (
         <p className="mt-4 text-xs text-grey-dark sr-only" aria-live="polite">
           Selected {getService(service ?? undefined)?.name} at {time ? formatTimeLabel(time) : ""}
         </p>
