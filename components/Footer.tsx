@@ -1,7 +1,21 @@
 import Link from "next/link";
 import { Phone, MapPin } from "lucide-react";
 import { LinkButton } from "./Button";
+import { InstagramIcon, FacebookIcon } from "./icons/SocialIcons";
 import { OPENING_HOURS } from "@/lib/hours";
+
+const SOCIAL_LINKS = [
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/askew_cuts/?hl=en",
+    icon: InstagramIcon,
+  },
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/pages/Askew-Cuts/345473105500410",
+    icon: FacebookIcon,
+  },
+];
 
 export default function Footer() {
   return (
@@ -18,6 +32,21 @@ export default function Footer() {
             <p className="mt-6 text-sm text-grey-light max-w-xs leading-relaxed">
               Professional cuts, precision fades and grooming, in the heart of London.
             </p>
+
+            <div className="mt-6 flex items-center gap-3">
+              {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Askew Cuts on ${label}`}
+                  className="h-10 w-10 inline-flex items-center justify-center border border-cream/20 hover:border-cream/60 hover:text-grey-light transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+                >
+                  <Icon width={18} height={18} aria-hidden="true" />
+                </a>
+              ))}
+            </div>
           </div>
 
           <div>
